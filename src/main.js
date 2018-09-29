@@ -8,6 +8,7 @@ import 'vuetify/dist/vuetify.min.css'
 import store from './store'
 
 import firebase from 'firebase/app'
+import * as firebaseStore from 'firebase/firestore'
 import * as firebaseAuth from 'firebase/auth'
 
 import fbConfig from './config/firebaseConfig'
@@ -18,6 +19,14 @@ Vue.config.productionTip = false
 
 // Initialize Firebase
 firebase.initializeApp(fbConfig)
+
+// Initialize Cloud Firestore through Firebase
+var db = firebase.firestore();
+
+// Disable deprecated features
+db.settings({
+  timestampsInSnapshots: true
+});
 
 Vue.prototype.$firebase = firebase
 

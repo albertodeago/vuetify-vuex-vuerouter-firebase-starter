@@ -1,5 +1,5 @@
 import firebase from 'firebase/app'
-import 'firebase/database'
+import 'firebase/firestore'
 import User from '../models/User'
 import Utils from '../Utils'
 
@@ -27,6 +27,8 @@ export default {
          */
         async signUp({ commit, dispatch }, {email, password, nickname}) {
             console.log("VUEX ACTION - signUp", email, password)
+            const db = firebase.firestore();
+            const usersCollection = db.collection('users');
             try {
                 const response = await firebase.auth().createUserWithEmailAndPassword(email, password)
                 const userId = response.user.uid
@@ -41,7 +43,7 @@ export default {
                     lastUpdate: creationDate,
                     lastLogin: creationDate
                 })
-                await firebase.database().ref('users/' + userId).set(user.toObject())
+                await usersCollection.doc(userId).set(user.toObject());
                 commit('setUser', user)
                 
                 return user
@@ -96,10 +98,12 @@ export default {
          */
         async getUser({ commit, rootState, dispatch}, firebaseUser) {
             console.log("VUEX ACTION - getUser", firebaseUser.uid)
+            const db = firebase.firestore();
+            const usersCollection = db.collection('users');
             
             try {
-                const snapshot = await firebase.database().ref('/users/' + firebaseUser.uid).once('value')
-                const user = snapshot.val();
+                const snapshot = await usersCollection.doc(firebaseUser.uid).get()
+                const user = snapshot.data();
                 console.log("VUEX ACTION - getUser - OK ", user)
                 commit('setUser', user)
 
