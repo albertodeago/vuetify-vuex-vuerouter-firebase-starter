@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app :dark="darkTheme">
 
     <!-- LOADER -->
     <div class="loader-wrapper" v-if="isLoading">
@@ -13,7 +13,9 @@
 
     <!-- TOP BAR -->
     <v-toolbar app :clipped-left="clipped">
-      <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+      <v-btn icon v-if="showBack" @click="goBack"><v-icon>arrow_back</v-icon></v-btn>
+      <v-toolbar-side-icon @click.stop="drawer = !drawer" v-else></v-toolbar-side-icon>
+      <v-toolbar-title>{{ title }}</v-toolbar-title>
     </v-toolbar>
     
     <!-- PAGE CONTENT -->
@@ -85,25 +87,23 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import SideMenu from './components/SideMenu.vue'
+import Enums from './config/enums'
+import Utils from './Utils'
 
 export default {
   name: 'App',
   
   components: {
-    'side-menu':SideMenu
+    'side-menu': SideMenu
   },
 
   data () {
     return {
+      title: 'My Notes',
       clipped: false,
       drawer: false,
       fixed: false,
-
-      items: [{
-        icon: 'bubble_chart',
-        title: 'Inspire'
-      }],
-      title: 'My Notes',
+      showBack: false
 
       // showSignUp: false,
       // loginEmail: '',
@@ -116,7 +116,7 @@ export default {
   },
   
   computed: {
-    ...mapGetters(['user', 'isLoading', 'errorMessage']),
+    ...mapGetters(['user', 'isLoading', 'errorMessage', 'darkTheme']),
 
     isUserLogged() {
       return !this.user
@@ -156,7 +156,26 @@ export default {
         nickname: this.signupNickname
       })
       this.setLoading(false)
+    },
+    goBack() {
+      this.$router.back()
     }
+  },
+  
+  watch: {
+    $route: function() {
+      console.log("router changed", this.$route.name);
+      if(this.$route.name === "settings")
+        this.showBack = true
+      else 
+        this.showBack = false
+    }
+  },
+
+  mounted() {
+    const cookie = !!Utils.getCookie(Enums.DARK_THEME_COOKIE)
+    if(cookie)
+      this.$store.commit("setDarkTheme", cookie)
   }
 }
 </script>
